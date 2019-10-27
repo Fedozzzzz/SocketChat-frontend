@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-
+import "../css/SignIn.css"
 
 class SignIn extends Component {
 
@@ -21,17 +21,23 @@ class SignIn extends Component {
     }
 
     render() {
-        return (<div className="container-fluid">
-            <div className="row justify-content-center">
-                <div className="form-inline" onSubmit={this.onSubmit}>
-                    <form className="form-group">
-                        <label htmlFor="nickname">Enter nickname</label>
-                        <input className="form-control" type="text" id="nickname" onChange={this.handleInput}/>
-                    </form>
-                    <button className="btn btn-success" onClick={this.onSubmit}>OK</button>
+        return (
+            <div className="sign-in sign-in__row">
+                <div className="container-fluid">
+                    <div className="row align-items-center ">
+                        <div className="col">
+                            <div className="form-inline justify-content-center" onSubmit={this.onSubmit}>
+                                <form className="form-group">
+                                    <label htmlFor="nickname">Enter nickname</label>
+                                    <input className="form-control" type="text" id="nickname"
+                                           onChange={this.handleInput}/>
+                                </form>
+                                <button className="btn btn-success" onClick={this.onSubmit}>OK</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>)
+            </div>)
     }
 }
 

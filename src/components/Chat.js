@@ -1,6 +1,7 @@
 import React, {Component} from "react"
 import "../css/Chat.css"
-import {openChatSocket} from "../api/socket";
+
+// import {openChatSocket} from "../api/socket";
 
 
 class Chat extends Component {
@@ -49,8 +50,6 @@ class Chat extends Component {
     onSubmit(e) {
         e.preventDefault();
         const {userMsg, nickname} = this.state;
-        // const {socket} = this.socket;
-        // console.log(userMsg);
         if (userMsg) {
             this.props.socket.emit("chat message", {msg: userMsg});
             this.setState({userMsg: ""})
@@ -64,17 +63,22 @@ class Chat extends Component {
 
     render() {
         console.log(this.state);
-        return (<div className="container-fluid">
-                <div className="chat">
-                    <div className="chat__window">
-                        <div className="row chat__window__message-list justify-content-center">
-                            <div className="col-sm-10 justify-content-center">
-                                <ul className="list-group">
-                                    {this.state.messages.map(msg => (
-                                        <li key={msg} className="list-group-item">{msg}</li>
-                                    ))}
-                                </ul>
-                            </div>
+        console.log(this.props);
+        return (
+            <div className="chat">
+                <div className="container-fluid">
+                    <div className="row">
+                        <div className="col">
+                            <h5 className="p-2">{this.props.chatRoom.name}</h5>
+                        </div>
+                    </div>
+                    <div className="row justify-content-center chat__window__message-list">
+                        <div className="col justify-content-center ">
+                            <ul className="list-group">
+                                {this.state.messages.map(msg => (
+                                    <li key={msg} className="list-group-item text-left">{msg}</li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                     <div className="row justify-content-center">

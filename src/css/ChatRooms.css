@@ -1,6 +1,5 @@
 
-
-.chat {
+.chat-rooms {
     margin: 2rem auto;
     width: 60%;
     /*justify-content: center;*/
@@ -9,12 +8,8 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-.chat__window__message-list {
+.chat-rooms__rooms {
     min-height: 80vh;
-    overflow-y: scroll;
     overflow-x: hidden;
-}
-
-.chat__window {
-
+    overflow-y: scroll;
 }
