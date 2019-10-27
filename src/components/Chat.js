@@ -17,15 +17,24 @@ class Chat extends Component {
         this.onSubmit = this.onSubmit.bind(this);
         this.onFormChange = this.onFormChange.bind(this);
         this.onGetMsg = this.onGetMsg.bind(this);
-        this.socket = openChatSocket();
-        this.socket.emit("nickname", this.props.nickname);
-        this.socket.on('chat message', (messages) => {
+        // this.socket = openChatSocket();
+        this.props.socket.emit("join room", this.props.socket.id);
+        // this.socket.emit("nickname", this.props.nickname);
+        this.props.socket.on('chat message', (messages) => {
             this.onGetMsg(messages)
         });
-        this.socket.on("news", (data) => {
+        this.props.socket.on("news", (data) => {
             console.log(data);
             this.onGetMsg(data.msg);
         })
+    }
+
+    componentDidMount() {
+        this.props.socket.emit("join room", this.props.chatRoom.id);
+    }
+
+    componentWillUnmount() {
+        this.props.socket.emit("disconnect");
     }
 
     onGetMsg(newMessage) {
@@ -43,7 +52,7 @@ class Chat extends Component {
         // const {socket} = this.socket;
         // console.log(userMsg);
         if (userMsg) {
-            this.socket.emit("chat message", {nickname, msg: userMsg});
+            this.props.socket.emit("chat message", {msg: userMsg});
             this.setState({userMsg: ""})
             // this.onGetMsg();
         }
@@ -73,8 +82,7 @@ class Chat extends Component {
                             <form className="form-group col-sm-8"
                                   onSubmit={this.onSubmit}>
                                 <input className="form-control col" type="text"
-                                       onChange={this.onFormChange} value={this.state.userMsg}
-                                />
+                                       onChange={this.onFormChange} value={this.state.userMsg}/>
                             </form>
                             <button type="button" className="btn btn-primary col-sm-4"
                                     onClick={this.onSubmit}>Submit
