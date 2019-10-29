@@ -66,7 +66,7 @@ class ChatRooms extends Component {
 
     render() {
         // console.log("chat rooms:", this.props);
-        // console.log("chat room state", this.state);
+        console.log("chat room state", this.state);
         return (
             <div className="chat-rooms">
                 <div className="container-fluid">

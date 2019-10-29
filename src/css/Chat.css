@@ -1,12 +1,8 @@
 
-
 .chat {
     margin: 2rem auto;
-    width: 60%;
+    /*width: 60%;*/
     /*justify-content: center;*/
-    background-color: white;
-    border-radius: 0.7rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .chat__window__message-list {
@@ -16,5 +12,19 @@
 }
 
 .chat__window {
+    /*width: 60%;*/
+    /*margin: 1rem ;*/
+    background-color: white;
+    border-radius: 0.7rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.chat__members {
+    min-height: 80vh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.chat__video {
 
 }
