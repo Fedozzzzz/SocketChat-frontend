@@ -20,11 +20,11 @@ class Chat extends Component {
             localVideo: null,
             remoteVideo: [],
         };
-        this.onSubmit = this.onSubmit.bind(this);
+        // this.onSubmit = this.onSubmit.bind(this);
         this.onFormChange = this.onFormChange.bind(this);
         this.renderMembersList = this.renderMembersList.bind(this);
         this.onGetMsg = this.onGetMsg.bind(this);
-        this.startBroadcast = this.startBroadcast.bind(this);
+        // this.startBroadcast = this.startBroadcast.bind(this);
         // this.startLocalVideo = this.startLocalVideo.bind(this);
         // this.socket = openChatSocket();
         this.props.socket.emit("join room", this.props.socket.id);
@@ -74,10 +74,10 @@ class Chat extends Component {
         this.setState({userMsg: e.target.value})
     }
 
-    startBroadcast() {
-        this.setState({broadcast: true});
-        // this.startLocalVideo();
-    }
+    // startBroadcast() {
+    //     this.setState({broadcast: true});
+    //     // this.startLocalVideo();
+    // }
 
     renderMembersList() {
         let result = [];
@@ -156,7 +156,7 @@ class Chat extends Component {
                             {/*</div>*/}
                             {/* : null*/}
                             {/*{this.state.broadcast ?*/}
-                            <VideoChat socket={this.props.socket}/>
+                            <VideoChat socket={this.props.socket} members={this.state.members}/>
                             {/*: null}*/}
                         </div>
                     </div>
