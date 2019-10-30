@@ -1,6 +1,8 @@
 import React, {Component} from "react";
 
 
+let FROM_ID;
+
 class VideoChat extends Component {
 
     constructor(props) {
@@ -25,12 +27,13 @@ class VideoChat extends Component {
         this.props.socket.on("webrtc", (fromId, data) => {
             console.log("webrtc", fromId, data);
             let currentPeerConnection = this.state.peerConnection.get(fromId);
+            this.fromId = fromId;
+            FROM_ID = fromId;
             // eslint-disable-next-line default-case
             switch (data.type) {
                 case "candidate":
                     let candidate = new RTCIceCandidate({sdpMLineIndex: data.label, candidate: data.candidate});
                     // this.setState({fromId});
-                    this.fromId = fromId;
                     // this.peerConnection.forEach(pc =>
                     currentPeerConnection.addIceCandidate(candidate)
                         .then(() => console.log("add ice candidate succeeded"))
@@ -83,9 +86,15 @@ class VideoChat extends Component {
         if (nextProps.members) {
             // let length = Object.keys(nextProps.members).length;
             // console.log(length);
+            // const pc_config = {
+            //     "iceServers": [{"url": "stun:stun.l.google.com:19302"}],
+            //     "optional": [{"DtlsSrtpKeyAgreement": true}]
+            // };
+            // const pc_constraints = {};
             let {peerConnection} = this.state;
             for (let member in nextProps.members) {
-                if (member !== this.state.socketId) {
+                if (member !== this.state.socketId
+                    && !peerConnection.has(member)) {
                     let pc = new RTCPeerConnection();
                     pc.onicecandidate = this.onIceCandidate;
                     pc.ontrack = this.gotRemoteStream;
@@ -139,6 +148,7 @@ class VideoChat extends Component {
 
     createOffer(id, pc) {
         console.log(id, pc);
+        console.log("creating offer");
         pc.createOffer()
             .then((description) => {
                 return pc.setLocalDescription(description)
@@ -153,6 +163,7 @@ class VideoChat extends Component {
 
     createAnswer(id, pc) {
         console.log(id, pc);
+        console.log("creating answer");
         pc.createAnswer()
             .then((description) => {
                 return pc.setLocalDescription(description)
@@ -167,18 +178,45 @@ class VideoChat extends Component {
 
     onIceCandidate(e) {
         const fromId = this.fromId;
+        // || this.state.socketId;
+        // const fromId = FROM_ID;
         console.log("ice candidate", e, fromId);
+        let identity;
+        for (let [id, peer] of this.state.peerConnection) {
+            if (e.currentTarget === peer) {
+                identity = id;
+                break;
+            }
+        }
+        // if (!fromId) {
+        // for (let member in this.state.peerConnection) {
+        // if (member !== this.state.socketId) {
+        // console.log(member);
         if (e.candidate) {
-            this.props.socket.emit("webrtc", fromId, {
+            this.props.socket.emit("webrtc", identity, {
                 type: 'candidate',
                 label: e.candidate.sdpMLineIndex,
                 id: e.candidate.sdpMid,
                 candidate: e.candidate.candidate
             })
         }
+        // }
+        // }
     }
 
+    // else {
+    //     if (e.candidate) {
+    //         this.props.socket.emit("webrtc", fromId, {
+    //             type: 'candidate',
+    //             label: e.candidate.sdpMLineIndex,
+    //             id: e.candidate.sdpMid,
+    //             candidate: e.candidate.candidate
+    //         })
+    //     }
+    // }
+
     call() {
+        // console.log(this.state.socketId);
         this.state.peerConnection.forEach((pc, id) => this.createOffer(id, pc));
     }
 
@@ -230,7 +268,7 @@ class VideoChat extends Component {
     }
 
     render() {
-        console.log("render", this.props.members);
+        console.log("render", this.props);
         console.log(this.state.peerConnection);
         console.log("this.state", this.state);
         return (<div>
