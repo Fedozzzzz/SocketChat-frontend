@@ -2,16 +2,12 @@ import React, {Component} from "react"
 import "../css/Chat.css"
 import VideoChat from "./VideoChat";
 
-// import {openChatSocket} from "../api/socket";
-
 
 class Chat extends Component {
 
     constructor(props) {
         super(props);
-
         this.state = {
-            // socket: openChatSocket(),
             nickname: this.props.nickname,
             userMsg: "",
             messages: [],
@@ -24,22 +20,18 @@ class Chat extends Component {
         this.onFormChange = this.onFormChange.bind(this);
         this.renderMembersList = this.renderMembersList.bind(this);
         this.onGetMsg = this.onGetMsg.bind(this);
-        // this.startBroadcast = this.startBroadcast.bind(this);
-        // this.startLocalVideo = this.startLocalVideo.bind(this);
-        // this.socket = openChatSocket();
-        // this.props.socket.emit("join room", this.props.socket.id);
-        // this.socket.emit("nickname", this.props.nickname);
-        this.props.socket.on('chat message', (messages) => {
-            this.onGetMsg(messages)
+        this.props.socket.on('chat message', (message) => {
+            this.onGetMsg(`(${message.date}) ${message.from}: ${message.msg}`)
         });
         this.props.socket.on("news", (data) => {
-            console.log(data);
             this.onGetMsg(data.msg);
         });
         this.props.socket.on("members", (data) => {
-            // console.log("members", data);
             this.setState({members: data});
         });
+        this.props.socket.on("disconnect", () => {
+            this.props.socket.emit("members");
+        })
     }
 
     componentDidMount() {
@@ -54,9 +46,7 @@ class Chat extends Component {
 
     onGetMsg(newMessage) {
         let {messages} = this.state;
-        // const tempArr = Array.from(this.state.messages);
         messages.push(newMessage);
-        // tempArr.push(messages);
         this.setState({messages: messages});
         console.log(newMessage);
     }
@@ -67,7 +57,6 @@ class Chat extends Component {
         if (userMsg) {
             this.props.socket.emit("chat message", {msg: userMsg});
             this.setState({userMsg: ""})
-            // this.onGetMsg();
         }
     }
 
@@ -79,14 +68,12 @@ class Chat extends Component {
         let result = [];
         const {members} = this.state;
         for (let user in members) {
-            result.push(<li className="list-group-item">{members[user].nickname}</li>)
+            result.push(<li className="list-group-item" key={user}>{members[user].nickname}</li>)
         }
         return result;
     }
 
     render() {
-        console.log(this.state);
-        console.log(this.props);
         return (
             <div>
                 <div className="chat">
@@ -111,28 +98,24 @@ class Chat extends Component {
                                             <h5 className="p-2">{this.props.chatRoom.name}</h5>
                                         </div>
                                     </div>
-                                    <div className="row d-flex justify-content-center chat__window__message-list">
+                                    <div className="row d-flex justify-content-center">
                                         <div className="col justify-content-center ">
-                                            <ul className="list-group">
+                                            <ul className="list-group chat__window__message-list">
                                                 {this.state.messages.map(msg => (
-                                                    <li key={msg} className="list-group-item text-left">{msg}</li>
+                                                    <li className="list-group-item text-left">{msg}</li>
                                                 ))}
                                             </ul>
                                         </div>
                                     </div>
                                     <div className="row justify-content-center">
                                         <div className="form-inline col">
-                                            <form className="form-group col-sm-6"
+                                            <form className="form-group col-sm-8"
                                                   onSubmit={this.onSubmit}>
                                                 <input className="form-control col" type="text"
                                                        onChange={this.onFormChange} value={this.state.userMsg}/>
                                             </form>
-                                            <button type="button" className="btn btn-primary col-sm-2"
+                                            <button type="button" className="btn btn-primary col-sm-4"
                                                     onClick={this.onSubmit}>Submit
-                                            </button>
-                                            <button type="button" className="btn btn-outline-info col-sm-4"
-                                                    onClick={this.startBroadcast}>Start
-                                                broadcast
                                             </button>
                                         </div>
                                     </div>
@@ -148,11 +131,3 @@ class Chat extends Component {
 }
 
 export default Chat;
-
-
-{/*<div>*/
-}
-{/*    <video id="localVideo" autoPlay={true}/>*/
-}
-{/*</div>*/
-}

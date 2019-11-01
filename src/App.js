@@ -4,6 +4,7 @@ import Chat from "./components/Chat";
 import {openChatSocket} from "./api/socket";
 import SignIn from "./components/SignIn";
 import ChatRooms from "./components/ChatRooms";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 
 class App extends Component {
@@ -15,20 +16,15 @@ class App extends Component {
             nickname: "",
             chatRoom: null,
             rooms: null,
-            // newChat: null,
         };
         this.socket = openChatSocket();
         this.signInCallback = this.signInCallback.bind(this);
         this.getAllChatRooms = this.getAllChatRooms.bind(this);
         this.getChatRoomCallback = this.getChatRoomCallback.bind(this);
-        this.socket.on("news", msg => {
-            console.log(msg.msg, msg.roomId)
-        });
     }
 
     signInCallback(data) {
         this.setState({loggedIn: data.loggedIn, nickname: data.nickname});
-        console.log("nick:", data);
         this.socket.emit("nickname", data.nickname);
     };
 
@@ -38,20 +34,20 @@ class App extends Component {
 
     getChatRoomCallback(chatRoom) {
         this.setState({chatRoom});
-        console.log("room:", chatRoom);
     }
 
     render() {
-        console.log("socket", this.socket);
-        console.log("state", this.state);
         const {loggedIn, chatRoom, rooms} = this.state;
         return (
-            <div className="App">
-                {!loggedIn ? <SignIn signInCallback={this.signInCallback}/> :
-                    !chatRoom ?
-                        <ChatRooms getChatRoomCallback={this.getChatRoomCallback} rooms={rooms} socket={this.socket}/> :
-                        <Chat socket={this.socket} chatRoom={chatRoom} nickname={this.state.nickname}/>}
-            </div>
+            <ErrorBoundary>
+                <div className="App">
+                    {!loggedIn ? <SignIn signInCallback={this.signInCallback}/> :
+                        !chatRoom ?
+                            <ChatRooms getChatRoomCallback={this.getChatRoomCallback} rooms={rooms}
+                                       socket={this.socket}/> :
+                            <Chat socket={this.socket} chatRoom={chatRoom} nickname={this.state.nickname}/>}
+                </div>
+            </ErrorBoundary>
         );
     }
 }

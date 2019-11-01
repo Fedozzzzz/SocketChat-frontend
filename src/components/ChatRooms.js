@@ -1,29 +1,21 @@
 import React, {Component} from "react";
 import "../css/ChatRooms.css"
 
+
 class ChatRooms extends Component {
+
     constructor(props) {
         super(props);
         this.state = {
-            // chatRoom: false,
+            chatRoom: null,
             rooms: new Map(),
         };
-        this.chosenRoom = this.chosenRoom.bind(this);
+        this.setRoom = this.setRoom.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
         this.renderList = this.renderList.bind(this);
         this.createNewChat = this.createNewChat.bind(this);
         this.props.socket.on("all rooms", data => {
-            console.log(data);
-            // this.setState({rooms: data});
-            let tempArr = new Map();
-            for (let key in data) {
-                if (key !== this.props.socket.id) {
-                    tempArr.set(key, data[key]);
-                }
-                console.log(key, data[key]);
-            }
-            this.setState({rooms: tempArr});
-            // console.log(data);
+            this.setState({rooms: data});
         });
     }
 
@@ -31,16 +23,14 @@ class ChatRooms extends Component {
         this.props.socket.emit("get all rooms");
     }
 
-    chosenRoom(e) {
-        // console.log(e.target.innerHTML);
-        // let key = ;
+    setRoom(e) {
         this.setState({chosenRoom: {name: e.target.innerHTML, id: e.target.id}})
     }
 
     createNewChat() {
         const roomName = prompt("Enter a room name");
         if (roomName) {
-            this.props.socket.emit("create room", this.props.socket.id, roomName, "hello");
+            this.props.socket.emit("create room", roomName);
             this.props.socket.emit("get all rooms");
         }
     }
@@ -56,20 +46,17 @@ class ChatRooms extends Component {
 
     renderList() {
         let result = [];
-        this.state.rooms.forEach((value, key) => {
-            result.push(<button onClick={this.chosenRoom}
-                                id={`${key}`}
+        for (let room in this.state.rooms) {
+            result.push(<button onClick={this.setRoom}
+                                id={`${room}`}
+                                key={room}
                                 className="list-group-item list-group-item-action">
-                {value}</button>);
-        });
-        // this.state.rooms.forEach(value => console.log(value));
-        // console.log(result);
+                {this.state.rooms[room]}</button>)
+        }
         return result;
     }
 
     render() {
-        // console.log("chat rooms:", this.props);
-        console.log("chat room state", this.state);
         return (
             <div className="chat-rooms">
                 <div className="container-fluid">
@@ -78,9 +65,8 @@ class ChatRooms extends Component {
                             <button className="btn btn-primary" onClick={this.createNewChat}>+Create new chat</button>
                         </div>
                     </div>
-                    {/*<button onClick={this.getAllChatRooms}>Get rooms</button>*/}
-                    <div className="row list-group chat-rooms__rooms">
-                        <div className="col p-0">
+                    <div className="row list-group ">
+                        <div className="col p-0 chat-rooms__rooms">
                             {this.renderList()}
                         </div>
                     </div>
