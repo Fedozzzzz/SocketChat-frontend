@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 
 
-let FROM_ID;
+// let FROM_ID;
 
 class VideoChat extends Component {
 
@@ -14,53 +14,46 @@ class VideoChat extends Component {
             socketId: this.props.socket.id,
             peerConnection: new Map()
         };
-        // this.peerConnection = new RTCPeerConnection();
-        // this.peerConnection = new Map();
         this.fromId = null;
-        // this.peerConnection = [];
-        // this.remotePeerConnection = new RTCPeerConnection();
         this.startLocalVideo = this.startLocalVideo.bind(this);
         this.gotRemoteStream = this.gotRemoteStream.bind(this);
         this.onIceCandidate = this.onIceCandidate.bind(this);
         this.onClick = this.onClick.bind(this);
         this.call = this.call.bind(this);
-        this.props.socket.on("webrtc", (fromId, data) => {
+        this.join = this.join.bind(this);
+        this.hangup = this.hangup.bind(this);
+        this.props.socket.on("webrtc signal", (fromId, data) => {
             console.log("webrtc", fromId, data);
             let currentPeerConnection = this.state.peerConnection.get(fromId);
+            console.log(currentPeerConnection);
             this.fromId = fromId;
-            FROM_ID = fromId;
             // eslint-disable-next-line default-case
             switch (data.type) {
                 case "candidate":
                     let candidate = new RTCIceCandidate({sdpMLineIndex: data.label, candidate: data.candidate});
-                    // this.setState({fromId});
-                    // this.peerConnection.forEach(pc =>
                     currentPeerConnection.addIceCandidate(candidate)
                         .then(() => console.log("add ice candidate succeeded"))
                         .catch(err => console.log(err));
-                    // );
                     break;
                 case "offer":
-                    // this.remotePeerConnection = new RTCPeerConnection();
-                    // this.remotePeerConnection.
-                    // let currentPeerConnection = this.peerConnection.get(fromId);
-                    // this.peerConnection.forEach(pc => {
                     currentPeerConnection.setRemoteDescription(new RTCSessionDescription(data))
                         .then(() => console.log("set remote description succeeded"))
                         .catch(err => console.log(err));
                     this.createAnswer(fromId, currentPeerConnection);
-                    // });
-                    // this.setState()
                     break;
                 case "answer":
-                    // this.remotePeerConnection = new RTCPeerConnection();
-                    // this.remotePeerConnection.
-                    // this.peerConnection.forEach(pc =>
                     currentPeerConnection.setRemoteDescription(new RTCSessionDescription(data))
                         .then(() => console.log("set remote description succeeded"))
-                        .catch(err => console.log(err))
-                // );
+                        .catch(err => console.log(err));
             }
+        });
+        this.props.socket.on("webrtc make offer", members => {
+            console.log("make offer:", members);
+            members.forEach(member => {
+                let pc = this.state.peerConnection.get(member);
+                this.createOffer(member, pc);
+                this.props.socket.emit("webrtc offer")
+            });
         })
     }
 
@@ -77,52 +70,32 @@ class VideoChat extends Component {
         }
 
         this.setState({remoteVideo});
-
-        //1 this.peerConnection.onicecandidate = this.onIceCandidate;
-        // this.peerConnection.ontrack = this.gotRemoteStream;
     }
 
     UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
         if (nextProps.members) {
-            // let length = Object.keys(nextProps.members).length;
-            // console.log(length);
-            // const pc_config = {
-            //     "iceServers": [{"url": "stun:stun.l.google.com:19302"}],
-            //     "optional": [{"DtlsSrtpKeyAgreement": true}]
-            // };
-            // const pc_constraints = {};
             let {peerConnection} = this.state;
             for (let member in nextProps.members) {
                 if (member !== this.state.socketId
                     && !peerConnection.has(member)) {
                     let pc = new RTCPeerConnection();
-                    pc.onicecandidate = this.onIceCandidate;
                     pc.ontrack = this.gotRemoteStream;
+                    pc.onicecandidate = this.onIceCandidate;
                     peerConnection.set(member, pc);
                 }
             }
             this.setState(peerConnection);
-            // for (let i = 0; i < length - 1; i++) {
-            //     // console.log(member);
-            //     // this.props.members.forEach(() => {
-            //     let pc = new RTCPeerConnection();
-            //     pc.onicecandidate = this.onIceCandidate;
-            //     pc.ontrack = this.gotRemoteStream;
-            //     // const id = pc.peerIdentity.then((res) => console.log(res)).catch(err => console.log(err));
-            //     const id = "id" + i;
-            //     this.peerConnection.set(id, pc);
-            //     // console.log(id);
-            //     // .then(res => console.log(res)).catch(err => console.log(err))
-            //     // this.peerConnection.push(pc);
-            //     // })
-            // }
         }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log("did update");
+        // console.log(prevState.peerConnection, prevState.localStream);
+        // console.log(this.state.peerConnection, this.state.localStream);
         if (this.state.localStream !== prevState.localStream) {
             this.state.peerConnection.forEach(pc =>
                 this.state.localStream.getTracks().forEach(track => pc.addTrack(track, this.state.localStream)));
+            // console.log(this.state.peerConnection, this.state.localStream);
             // this.state.localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, this.state.localStream));
         }
         if (this.props.members !== prevProps.members) {
@@ -135,27 +108,20 @@ class VideoChat extends Component {
     }
 
     onClick(e) {
-        // this.peerConnection.forEach(v)
         this.startLocalVideo();
-        // if (this.state.localStream) {
-        //     this.peerConnection.forEach(pc =>
-        //         this.state.localStream.getTracks().forEach(track => pc.addTrack(track, this.state.localStream)));
-        // }
-        // this.state.localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, this.state.localStream));
-        // this.peerConnection.forEach(pc =>
-        //     this.state.localStream.getTracks().forEach(track => pc.addTrack(track, this.state.localStream)));
     }
 
     createOffer(id, pc) {
         console.log(id, pc);
         console.log("creating offer");
+        console.log("stream:", this.state.localStream);
         pc.createOffer()
             .then((description) => {
                 return pc.setLocalDescription(description)
             })
             .then(() => {
                 console.log(pc.localDescription);
-                this.props.socket.emit("webrtc", id, pc.localDescription);
+                this.props.socket.emit("webrtc signal", id, pc.localDescription);
                 console.log("ok!");
             })
             .catch(err => console.log("creating offer failed", err));
@@ -164,13 +130,14 @@ class VideoChat extends Component {
     createAnswer(id, pc) {
         console.log(id, pc);
         console.log("creating answer");
+        console.log("stream:", this.state.localStream);
         pc.createAnswer()
             .then((description) => {
                 return pc.setLocalDescription(description)
                 // .catch(err => console.loog("creating offer failed", err));
             })
             .then(() => {
-                this.props.socket.emit("webrtc", id, pc.localDescription);
+                this.props.socket.emit("webrtc signal", id, pc.localDescription);
                 console.log("ok!")
             })
             .catch(err => console.log("creating answer failed", err));
@@ -178,8 +145,6 @@ class VideoChat extends Component {
 
     onIceCandidate(e) {
         const fromId = this.fromId;
-        // || this.state.socketId;
-        // const fromId = FROM_ID;
         console.log("ice candidate", e, fromId);
         let identity;
         for (let [id, peer] of this.state.peerConnection) {
@@ -188,36 +153,26 @@ class VideoChat extends Component {
                 break;
             }
         }
-        // if (!fromId) {
-        // for (let member in this.state.peerConnection) {
-        // if (member !== this.state.socketId) {
-        // console.log(member);
         if (e.candidate) {
-            this.props.socket.emit("webrtc", identity, {
+            this.props.socket.emit("webrtc signal", identity, {
                 type: 'candidate',
                 label: e.candidate.sdpMLineIndex,
                 id: e.candidate.sdpMid,
                 candidate: e.candidate.candidate
             })
         }
-        // }
-        // }
     }
 
-    // else {
-    //     if (e.candidate) {
-    //         this.props.socket.emit("webrtc", fromId, {
-    //             type: 'candidate',
-    //             label: e.candidate.sdpMLineIndex,
-    //             id: e.candidate.sdpMid,
-    //             candidate: e.candidate.candidate
-    //         })
-    //     }
-    // }
-
     call() {
-        // console.log(this.state.socketId);
-        this.state.peerConnection.forEach((pc, id) => this.createOffer(id, pc));
+        this.props.socket.emit("webrtc offer");
+    }
+
+    join() {
+        this.props.socket.emit("webrtc join");
+    }
+
+    hangup() {
+        this.state.peerConnection.forEach(pc => pc.close());
     }
 
     startLocalVideo() {
@@ -228,10 +183,10 @@ class VideoChat extends Component {
                 localVideo.srcObject = stream;
                 this.setState({
                     localVideo: localVideo,
-                    localStream: stream
+                    localStream: stream,
                 });
             })
-            .catch(err => console.log(err))
+            .catch(err => console.log(err));
     }
 
     gotRemoteStream(e) {
@@ -280,6 +235,8 @@ class VideoChat extends Component {
             <div>
                 <button onClick={this.onClick}>Start broadcast</button>
                 <button onClick={this.call}>Call</button>
+                <button onClick={this.join}>Join</button>
+                <button onClick={this.hangup}>Hangup</button>
             </div>
         </div>)
     }

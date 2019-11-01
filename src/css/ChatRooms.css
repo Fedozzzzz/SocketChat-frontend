@@ -9,7 +9,7 @@
 }
 
 .chat-rooms__rooms {
-    min-height: 80vh;
+    min-height: 70vh;
     overflow-x: hidden;
     overflow-y: scroll;
 }

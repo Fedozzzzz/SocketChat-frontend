@@ -33,8 +33,8 @@ class ChatRooms extends Component {
 
     chosenRoom(e) {
         // console.log(e.target.innerHTML);
-        let key = e.target.innerHTML;
-        this.setState({chosenRoom: {name: key, data: this.state.rooms.get(e.target.innerHTML)}})
+        // let key = ;
+        this.setState({chosenRoom: {name: e.target.innerHTML, id: e.target.id}})
     }
 
     createNewChat() {
@@ -56,6 +56,7 @@ class ChatRooms extends Component {
         let result = [];
         this.state.rooms.forEach((value, key) => {
             result.push(<button onClick={this.chosenRoom}
+                                id={`${key}`}
                                 className="list-group-item list-group-item-action">
                 {value}</button>);
         });

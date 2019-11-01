@@ -20,14 +20,14 @@ class Chat extends Component {
             localVideo: null,
             remoteVideo: [],
         };
-        // this.onSubmit = this.onSubmit.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
         this.onFormChange = this.onFormChange.bind(this);
         this.renderMembersList = this.renderMembersList.bind(this);
         this.onGetMsg = this.onGetMsg.bind(this);
         // this.startBroadcast = this.startBroadcast.bind(this);
         // this.startLocalVideo = this.startLocalVideo.bind(this);
         // this.socket = openChatSocket();
-        this.props.socket.emit("join room", this.props.socket.id);
+        // this.props.socket.emit("join room", this.props.socket.id);
         // this.socket.emit("nickname", this.props.nickname);
         this.props.socket.on('chat message', (messages) => {
             this.onGetMsg(messages)
@@ -40,9 +40,13 @@ class Chat extends Component {
             // console.log("members", data);
             this.setState({members: data});
         });
+        // this.props.socket.on("room link", (roomId) => {
+        //     console.log("room id:", roomId);
+        // })
     }
 
     componentDidMount() {
+        console.log(this.props.chatRoom);
         this.props.socket.emit("join room", this.props.chatRoom.id);
         this.props.socket.emit("members");
     }
