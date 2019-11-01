@@ -1,15 +1,13 @@
 import React, {Component} from "react";
 
 
-// let FROM_ID;
-
 class VideoChat extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
             localVideo: null,
-            remoteVideo: null,
+            remoteVideo: new Map(),
             localStream: null,
             socketId: this.props.socket.id,
             peerConnection: new Map()
@@ -45,12 +43,17 @@ class VideoChat extends Component {
                     currentPeerConnection.setRemoteDescription(new RTCSessionDescription(data))
                         .then(() => console.log("set remote description succeeded"))
                         .catch(err => console.log(err));
+                // this.state.localStream.getTracks().forEach(track =>
+                //     currentPeerConnection.addTrack(track, this.state.localStream));
             }
         });
         this.props.socket.on("webrtc make offer", members => {
             console.log("make offer:", members);
             members.forEach(member => {
                 let pc = this.state.peerConnection.get(member);
+                // this.state.peerConnection.forEach(pc =>
+                //     this.state.localStream.getTracks().forEach(track =>
+                //         pc.addTrack(track, this.state.localStream)));
                 this.createOffer(member, pc);
                 this.props.socket.emit("webrtc offer")
             });
@@ -68,7 +71,6 @@ class VideoChat extends Component {
         for (let [id, peer] of this.state.peerConnection) {
             remoteVideo.set(id, document.getElementById("remoteVideo" + id));
         }
-
         this.setState({remoteVideo});
     }
 
@@ -92,16 +94,23 @@ class VideoChat extends Component {
         console.log("did update");
         // console.log(prevState.peerConnection, prevState.localStream);
         // console.log(this.state.peerConnection, this.state.localStream);
+        // if()
         if (this.state.localStream !== prevState.localStream) {
             this.state.peerConnection.forEach(pc =>
                 this.state.localStream.getTracks().forEach(track => pc.addTrack(track, this.state.localStream)));
             // console.log(this.state.peerConnection, this.state.localStream);
             // this.state.localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, this.state.localStream));
         }
+
         if (this.props.members !== prevProps.members) {
-            let remoteVideo = new Map();
+            let {remoteVideo} = this.state;
             for (let [id, peer] of this.state.peerConnection) {
                 remoteVideo.set(id, document.getElementById("remoteVideo" + id));
+            }
+            if (this.state.localStream) {
+                navigator.mediaDevices.getUserMedia({audio: true, video: true})
+                    .then(stream => this.setState({localStream: stream,}))
+                    .catch(err => console.log(err));
             }
             this.setState({remoteVideo});
         }

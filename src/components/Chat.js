@@ -40,9 +40,6 @@ class Chat extends Component {
             // console.log("members", data);
             this.setState({members: data});
         });
-        // this.props.socket.on("room link", (roomId) => {
-        //     console.log("room id:", roomId);
-        // })
     }
 
     componentDidMount() {
@@ -78,21 +75,12 @@ class Chat extends Component {
         this.setState({userMsg: e.target.value})
     }
 
-    // startBroadcast() {
-    //     this.setState({broadcast: true});
-    //     // this.startLocalVideo();
-    // }
-
     renderMembersList() {
         let result = [];
         const {members} = this.state;
         for (let user in members) {
-            // console.log(user);
             result.push(<li className="list-group-item">{members[user].nickname}</li>)
         }
-        // this.state.members.forEach((value => {
-        //     result.push(<li className="list-group-item">{value.nickname}</li>)
-        // }));
         return result;
     }
 
@@ -150,18 +138,7 @@ class Chat extends Component {
                                     </div>
                                 </div>
                             </div>
-                            {/*{this.state.broadcast ?*/}
-                            {/*<div className="chat__video embed-responsive embed-responsive-4by3">*/}
-                            {/*    <video*/}
-                            {/*        className="embed-responsive-item"*/}
-                            {/*        id="localVideo" autoPlay={true}/>*/}
-                            {/*    <video className="embed-responsive-item" id="remoteVideo"/>*/}
-                            {/*    /!*<video *!/*/}
-                            {/*</div>*/}
-                            {/* : null*/}
-                            {/*{this.state.broadcast ?*/}
                             <VideoChat socket={this.props.socket} members={this.state.members}/>
-                            {/*: null}*/}
                         </div>
                     </div>
                 </div>

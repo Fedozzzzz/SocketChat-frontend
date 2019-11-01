@@ -39,8 +39,10 @@ class ChatRooms extends Component {
 
     createNewChat() {
         const roomName = prompt("Enter a room name");
-        this.props.socket.emit("create room", this.props.socket.id, roomName, "hello");
-        this.props.socket.emit("get all rooms");
+        if (roomName) {
+            this.props.socket.emit("create room", this.props.socket.id, roomName, "hello");
+            this.props.socket.emit("get all rooms");
+        }
     }
 
     onSubmit() {
