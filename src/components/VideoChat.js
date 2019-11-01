@@ -19,7 +19,9 @@ class VideoChat extends Component {
             remoteVideo: new Map(),
             localStream: null,
             socketId: this.props.socket.id,
-            peerConnections: new Map()
+            peerConnections: new Map(),
+            callDisabled: true,
+            hangupDisabled: true,
         };
         this.fromId = null;
         this.startLocalVideo = this.startLocalVideo.bind(this);
@@ -111,6 +113,7 @@ class VideoChat extends Component {
 
     startBroadcast(e) {
         this.startLocalVideo();
+        this.setState({callDisabled: false});
     }
 
     createOffer(id, pc) {
@@ -155,6 +158,7 @@ class VideoChat extends Component {
 
     call() {
         this.props.socket.emit("webrtc offer");
+        this.setState({hangupDisabled: false})
     }
 
     join() {
@@ -211,9 +215,12 @@ class VideoChat extends Component {
         return (<div>
             <div>
                 <button onClick={this.startBroadcast} className="btn btn-dark">Start broadcast</button>
-                <button onClick={this.call} className="btn btn-outline-info">Call</button>
+                <button onClick={this.call} className="btn btn-outline-info" disabled={this.state.callDisabled}>Call
+                </button>
                 <button onClick={this.join} className="btn btn-outline-success">Join</button>
-                <button onClick={this.hangup} className="btn btn-outline-warning">Hangup</button>
+                <button onClick={this.hangup} className="btn btn-outline-warning"
+                        disabled={this.state.hangupDisabled}>Hangup
+                </button>
             </div>
             <div className="container-fluid">
                 <div className="row justify-content-between">
